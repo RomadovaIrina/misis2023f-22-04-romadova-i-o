@@ -1,3 +1,4 @@
 OK: file codeforces.id is correct
-ERROR: invalid file name 913a
-ERROR: CMake generator failed
+OK: folder prj.codeforces structure is correct
+OK: CMake generator successed
+OK: CMake build (MSVC x64) successed
