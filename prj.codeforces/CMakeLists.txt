@@ -1,5 +1,6 @@
 add_executable(0118a "0118a.cpp")
 add_executable(0913a "0913a.cpp")
+add_executable(0980a "0980a.cpp")
 add_executable(0758a "0758a.cpp")
 add_executable(1108a 1108a.cpp)
 add_executable(1703a 1703a.cpp)
