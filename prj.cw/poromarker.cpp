@@ -4,50 +4,66 @@
 #include "opencv2/highgui/highgui.hpp"
 #include "opencv2/imgproc/imgproc.hpp"
 #include <vector>
+#include <lemon/connectivity.h>
+#include <lemon/list_graph.h>
+#include <lemon/adaptors.h>
+#include <string>
 
 int main() {
-
-    //понять как сюда пачку изображений-масок грузить
-    cv::Mat img;
-    img = cv::imread("C:/Users/romad/source/repos/PoroMarker/on.tif.thumb.jpg", cv::IMREAD_GRAYSCALE);
-    cv::Mat connected(img.size(), CV_32S);
-    //Маска из 0 и 1 по изобрадению
-    int limit = 100;
-    cv::Mat mask(img.size(), CV_8UC1);
-    for (int r = 0; r < img.rows; r += 1) {
-        for (int c = 0; c < img.cols; c += 1) {
-            uchar pixel = img.at<uchar>(r, c);
-            if (limit < 128) {
-                if (pixel < limit) {
-                    pixel = 1;
+    int n = 5;
+    std::vector<cv::Mat> pics;
+    {
+        pics.push_back(cv::imread("C:/Users/romad/source/repos/PoroMarker/test_1.png", cv::IMREAD_GRAYSCALE));
+        pics.push_back(cv::imread("C:/Users/romad/source/repos/PoroMarker/test_2.png", cv::IMREAD_GRAYSCALE));
+        pics.push_back(cv::imread("C:/Users/romad/source/repos/PoroMarker/test_3.png", cv::IMREAD_GRAYSCALE));
+        pics.push_back(cv::imread("C:/Users/romad/source/repos/PoroMarker/test_4.png", cv::IMREAD_GRAYSCALE));
+        pics.push_back(cv::imread("C:/Users/romad/source/repos/PoroMarker/test_5.png", cv::IMREAD_GRAYSCALE));
+        for (int t = 0; t < n; t++) {
+            bin(pics[t]);
+        }
+    }
+    using PairType = std::pair<std::pair<int, int>, std::pair<int, int>>;
+    std::set<PairType> test_set;
+    for (int p = 0; p < n-1 ; p += 1) {
+        cv::Mat connected_1(pics[p].size(), CV_32S);
+        cv::Mat connected_2(pics[p+1].size(), CV_32S);
+        int labeled_1 = cv::connectedComponents(pics[p], connected_1, 8);
+        int labeled_2 = cv::connectedComponents(pics[p+1], connected_2, 8);
+        cv::Mat intersect = pics[p] & pics[p+1];
+        cv::Mat intersect_label(pics[p].size(), CV_32S);
+        cv::Mat stats, center;
+        int mask_n = cv::connectedComponentsWithStats(intersect, intersect_label, stats, center, 8);
+        for (int comp = 1; comp < mask_n; comp += 1) {
+            bool found = 0;
+            int border_x = stats.at<int>(comp, cv::CC_STAT_LEFT);
+            int border_y = stats.at<int>(comp, cv::CC_STAT_TOP);
+            int height = stats.at<int>(comp, cv::CC_STAT_HEIGHT);
+            int width = stats.at<int>(comp, cv::CC_STAT_WIDTH);
+            for (int c = border_x; c < border_x + width; c += 1) {
+                uchar pixel = intersect.at<uchar>(border_y, c);
+                if (pixel == 255) {
+                    int c_1 = connected_1.at<int>(border_y, c);
+                    int c_2 = connected_2.at<int>(border_y, c);
+                    test_set.insert(std::make_pair(std::make_pair(p+1, c_1), std::make_pair(p+2, c_2)));
+                    found = 1;
+                    break;
                 }
-                else {
-                    pixel = 0;
-                }
-
             }
-            mask.at<uchar>(r, c) = pixel;
+            if (!found) {
+                for (int r = border_y; r < border_y + height; r += 1) {
+                    uchar pixel = intersect.at<uchar>(r, border_x);
+                    if (pixel == 255) {
+                        int c_1 = connected_1.at<int>(r, border_x);
+                        int c_2 = connected_2.at<int>(r, border_x);
+                        test_set.insert(std::make_pair(std::make_pair(p+1, c_1), std::make_pair(p+2, c_2)));
+                        break;
+                    }
+                }
+            }
         }
     }
-    //Ищем количество связных компонент
-    int amount_of_components = cv::connectedComponents(mask, connected, 8);
-    std::cout << "\n" << amount_of_components << "\n";
-    cv::Mat res_img(img.size(), CV_8UC1);
-    std::vector<uchar> colors(amount_of_components);
-    //определяем цвет связных компонент
-    for (int i = 0; i < amount_of_components; i += 1) {
-        colors[i] = uchar(std::rand() & 255);
+    for (const auto& pair : test_set) {
+        std::cout << pair.first.first << " " << pair.first.second << "||";
+        std::cout << pair.second.first << " " << pair.second.second << std::endl;
     }
-    colors[0] = uchar(0);//фон
-    //меняем цвет у связных компонент
-    for (int r = 0; r < res_img.rows; r += 1) {
-        for (int c = 0; c < res_img.cols; c += 1) {
-            int label = connected.at<int>(r, c);
-            uchar& pixel = res_img.at<uchar>(r, c);
-            pixel = colors[label];
-        }
-    }
-    //а как по полученному строить график
-    cv::imshow("Connected Components", res_img);
-    cv::waitKey(0);
 }
