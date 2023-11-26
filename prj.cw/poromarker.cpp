@@ -4,11 +4,11 @@
 #include "opencv2/highgui/highgui.hpp"
 #include "opencv2/imgproc/imgproc.hpp"
 #include <vector>
-#include <lemon/connectivity.h>
-#include <lemon/list_graph.h>
-#include <lemon/adaptors.h>
 #include <string>
 
+void bin(cv::Mat& im) {
+    cv::threshold(im, im, 128, 255, cv::THRESH_BINARY);
+}
 int main() {
     int n = 5;
     std::vector<cv::Mat> pics;
