@@ -8,4 +8,5 @@ add_executable(1703c 1703c.cpp)
 add_executable(1833c 1833c.cpp)
 add_executable(1856a 1856a.cpp)
 add_executable(1543b 1543b.cpp)
+add_executable(1454b 1454b.cpp)
 
