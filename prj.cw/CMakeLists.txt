@@ -1,4 +1,2 @@
-add_executable(poromarker poromarker.cpp)
+add_subdirectory(porocheck)
 
-
-target_link_libraries(poromarker PRIVATE opencv_core opencv_highgui)
