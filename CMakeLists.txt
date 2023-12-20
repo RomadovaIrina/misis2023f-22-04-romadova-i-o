@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.18)   
 
-project ("temporary")
+project ("PoroMarker")
 
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 set_property(GLOBAL PROPERTY PREDEFINED_TARGETS_FOLDER "cmake")
@@ -23,14 +23,6 @@ find_package(OpenCV REQUIRED)
 find_package(LEMON REQUIRED)
 
 add_subdirectory ("prj.cw")
-add_executable(temp  "temp.cpp" )
-target_link_libraries(temp  porocheck unofficial::lemon::lemon opencv_core opencv_highgui)
-
-add_executable(main  "main.cpp")
-
-
-target_link_libraries(main opencv_core opencv_highgui)
-target_link_libraries(main unofficial::lemon::lemon)
-
-# Include sub-projects.
 add_subdirectory ("prj.codeforces")
+add_subdirectory ("prj.test")
+

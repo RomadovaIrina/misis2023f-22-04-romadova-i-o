@@ -1,6 +1,6 @@
 #pragma once
-#ifndef HELP
-#define HELP
+#ifndef MARKUP_CHECK_2023
+#define MARKUP_CHECK_2023
 
 
 #include <iostream>
@@ -14,9 +14,9 @@
 #include <string>
 #include <unordered_map>
 
-//void PoroCheck(const std::vector<cv::Mat>& boba) {
-//    std::cout << "sdfghjkl;lkjhgfdfgjkl;lkjhv";
-//}
+void build_check() {
+    std::cout << "Ok";
+}
 
 
 struct UniqueNode {
@@ -26,6 +26,7 @@ struct UniqueNode {
         return (layer == other.layer && component == other.component);
     }
 };
+
 
 template <>
 struct std::hash<UniqueNode>
@@ -37,6 +38,8 @@ struct std::hash<UniqueNode>
             ^ (std::hash<int>()(k.component) << 1)) >> 1);
     }
 };
+
+
 
 //костыль, которого быть не должно но пока он есть
 void bin(cv::Mat& im) {
@@ -63,6 +66,7 @@ void FillUniqueNodes(const int& height, const int& width, const int& amount, lem
     }
 
 }
+
 std::vector<UniqueNode> FindRocks(const int& limit, const lemon::ListGraph& g, lemon::ListGraph::NodeMap<UniqueNode>& node_set) {
 
 
@@ -95,6 +99,7 @@ std::vector<UniqueNode> FindRocks(const int& limit, const lemon::ListGraph& g, l
     }
     return to_color;
 }
+
 void ColorRocks(std::vector<UniqueNode>& rocks, const std::vector<int>& filling_color, const std::vector<cv::Mat>& images) {
     for (const auto& el : rocks) {
         cv::Mat orig_img = images[el.layer - 1];
@@ -125,6 +130,7 @@ void ColorRocks(std::vector<UniqueNode>& rocks, const std::vector<int>& filling_
     }
 
 }
+
 void PoroCheck(std::vector<cv::Mat>& pics) {
     for (int t = 0; t < pics.size(); t++) {
         bin(pics[t]);
@@ -210,4 +216,5 @@ void PoroCheck(std::vector<cv::Mat>& pics) {
     }
 
 }
+
 #endif
