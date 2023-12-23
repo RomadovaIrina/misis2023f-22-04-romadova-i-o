@@ -42,3 +42,26 @@ if(DOXYGEN_FOUND)
        install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/documentation
                DESTINATION docs)
    endif()
+
+install(TARGETS temp
+DESTINATION bin)
+
+install(DIRECTORY ${CMAKE_SOURCE_DIR}/input_pictures/
+  DESTINATION data
+)
+
+install(DIRECTORY ${CMAKE_RUNTIME_OUTPUT_DIRECTORY_DEBUG}/
+      DESTINATION bin
+      CONFIGURATIONS Debug
+      FILES_MATCHING PATTERN "*.dll*"
+      )
+  install(DIRECTORY ${CMAKE_RUNTIME_OUTPUT_DIRECTORY_RELEASE}/
+      CONFIGURATIONS Release
+      DESTINATION bin
+      FILES_MATCHING PATTERN "*.dll*"
+      )
+  install(DIRECTORY ${CMAKE_RUNTIME_OUTPUT_DIRECTORY_RELWITHDEBINFO}/
+      DESTINATION bin
+      CONFIGURATIONS RelWithDebInfo
+      FILES_MATCHING PATTERN "*.dll*"
+      )
