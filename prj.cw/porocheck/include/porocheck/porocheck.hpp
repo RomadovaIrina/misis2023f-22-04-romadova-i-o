@@ -14,11 +14,11 @@
 #include <string>
 #include <unordered_map>
 
-void build_check() {
-    std::cout << "Ok";
-}
+void build_check();
 
-
+/**
+    @brief Структура уникальной вершины, где хранится номер слоя и номер компоненты связности
+*/
 struct UniqueNode {
     int layer;
     int component;
@@ -27,7 +27,9 @@ struct UniqueNode {
     }
 };
 
-
+/**
+    @brief Хэш-функция для структуры уникальных вершин 
+*/
 template <>
 struct std::hash<UniqueNode>
 {
@@ -41,15 +43,53 @@ struct std::hash<UniqueNode>
 
 
 
-//костыль, которого быть не должно но пока он есть
-void bin(cv::Mat& im);
+/**
+    @brief Функция для бинаризации изображения. 
+    @param in Изображение котрое надо преобразовать 
+    @param back Параметр цвета фона, в зависимости от которого цвета будут или не будут инвертированы 
+*/
+void bin(cv::Mat& im, const int& back);
+
+/**
+    @brief Функция, для проверки границ цвета. 
+    @param color_to_checkЦвет, выход за диапазон которого требуется проверить 
+*/
 void CheckColor(int& color_to_check);
+
+/**
+    @brief Функция для нахождения уникальных пар (слой, компонента) на изображении. 
+    @param height Высота изображения 
+    @param width Ширина изображения 
+    @param amount Количество связных компонент на изображении 
+    @param graph Граф, к которому требуется добавить вершины 
+    @param node_set Список, где хранятся значения вершин 
+    @param UniqueNodes	Список вершин графа 
+*/
 void FillUniqueNodes(const int& height, const int& width, const int& amount, lemon::ListGraph& graph, const int& picture_index,
     lemon::ListGraph::NodeMap<UniqueNode>& node_set, std::unordered_map<UniqueNode, lemon::ListGraph::Node>& UniqueNodes);
 
+/**
+    @brief Функция для нахождения висячих камней на изображении. 
+    @param limit Пороговый вес, начиная с которого камень считается висячим 
+    @param graph Граф, в котором требуется искать такие компоненты 
+    @param node_set Список значений вершин графа 
+*/
 std::vector<UniqueNode> FindRocks(const int& limit, const lemon::ListGraph& g, lemon::ListGraph::NodeMap<UniqueNode>& node_set);
 
-void ColorRocks(std::vector<UniqueNode>& rocks, const std::vector<int>& filling_color, const std::vector<cv::Mat>& images);
-void PoroCheck(std::vector<cv::Mat>& pics);
+/**
+    @brief Функция для покраски висячего камня на изображении, полученный из функции FindRocks. 
+    @param rocks Массив уникальных пар (слой, компонента), которые требуется покрасить 
+    @param filling_color Цвет, которым требуется покрасить висячие камни 
+    @param back Цвет фона 
+    @param images Сыылка на массив изначальных изображений, часть которых требуется скопировать 
+*/
+void ColorRocks(std::vector<UniqueNode>& rocks, const std::vector<int>& filling_color, const int& back, const std::vector<cv::Mat>& images);
+
+/**
+    @brief Функция для проверки разметки пор на изображениях. 
+    @param background Цвет Поры - фона
+*/
+void PoroCheck(std::vector<cv::Mat>& pics, const int& back);
+
 
 #endif

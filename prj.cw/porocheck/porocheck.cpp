@@ -1,8 +1,19 @@
 #include <porocheck/porocheck.hpp>
 
+void build_check() {
+    std::cout << "Ok";
+}
+
 //костыль, которого быть не должно но пока он есть
-void bin(cv::Mat& im) {
+void bin(cv::Mat& im, const int& back) {
+    if (back == 0) {
+
     cv::threshold(im, im, 128, 255, cv::THRESH_BINARY);
+    }
+    else if (back == 255) {
+
+        cv::threshold(im, im, 128, 255, cv::THRESH_BINARY_INV);
+    }
 }
 void CheckColor(int& color_to_check) {
     if (color_to_check < 0 || color_to_check>255) {
@@ -52,7 +63,7 @@ std::vector<UniqueNode> FindRocks(const int& limit, const lemon::ListGraph& g, l
     return to_color;
 }
 
-void ColorRocks(std::vector<UniqueNode>& rocks, const std::vector<int>& filling_color, const std::vector<cv::Mat>& images) {
+void ColorRocks(std::vector<UniqueNode>& rocks, const std::vector<int>& filling_color, const int& back, const std::vector<cv::Mat>& images) {
     for (const auto& el : rocks) {
         cv::Mat orig_img = images[el.layer - 1];
         cv::Mat labeled_img(orig_img.size(), CV_32S);
@@ -60,10 +71,10 @@ void ColorRocks(std::vector<UniqueNode>& rocks, const std::vector<int>& filling_
 
         std::vector<cv::Vec3b> colors(labels_amount);
         for (int label = 1; label < labels_amount; ++label) {
-            colors[label] = cv::Vec3b(255, 255, 255);
+            colors[label] = cv::Vec3b(255-back, 255-back, 255-back);
         }
         // задаем цвета фону и той компоненте, которую надо покрасить
-        colors[0] = cv::Vec3b(0, 0, 0);
+        colors[0] = cv::Vec3b(back, back, back);
         colors[el.component] = cv::Vec3b(filling_color[0], filling_color[1], filling_color[2]);
 
         cv::Mat colored_img(orig_img.size(), CV_8UC3);
@@ -83,9 +94,9 @@ void ColorRocks(std::vector<UniqueNode>& rocks, const std::vector<int>& filling_
 
 }
 
-void PoroCheck(std::vector<cv::Mat>& pics) {
+void PoroCheck(std::vector<cv::Mat>& pics, const int& back) {
     for (int t = 0; t < pics.size(); t++) {
-        bin(pics[t]);
+        bin(pics[t], back);
     }
     lemon::ListGraph g;
     //создаем список вершин, где хранится информация о значении вершины графа
@@ -163,7 +174,7 @@ void PoroCheck(std::vector<cv::Mat>& pics) {
             std::cin >> color[t];
             CheckColor(color[t]);
         }
-        ColorRocks(to_color, color, pics);
+        ColorRocks(to_color, color, back, pics);
         std::cout << "\nColored";
     }
 
