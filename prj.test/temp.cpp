@@ -15,13 +15,25 @@
 //}
 
 int main(int argc, char* argv[]) {
-    ////инициализация данных
-    // porocheck, dirname, filename, pics_amount, back, limit, color(3), fn ount
-    if (argv[1]=="PoroCheck") {
-        std::string dir = argv[2], filename = argv[3];
-        int amount = *argv[4]-'0';
+    if (argc > 1 && strcmp(argv[1], "PoroCheck") == 0) {
+        if (argc < 10) {
+            std::cerr << "Not enough arguments for PoroCheck\n";
+            return 1;
+        }
+
+        std::string dir = argv[2];
+        std::string filename = argv[3];
+        int amount = std::stoi(argv[4]);
+        uchar back = static_cast<uchar>(std::stoi(argv[5]));
+        int limit = std::stoi(argv[6]);
+        cv::Vec3b color(static_cast<uchar>(std::stoi(argv[7])),
+            static_cast<uchar>(std::stoi(argv[8])),
+            static_cast<uchar>(std::stoi(argv[9])));
+
         std::cout << "\n" << "Enter background color: ";
         std::vector<cv::Mat> pictures = ReadImages(dir, filename, amount);
-        PoroCheck(pictures, uchar(argv[5]), *argv[6] - '0', cv::Vec3b(*argv[7], *argv[8], *argv[9]));
+        PoroCheck(pictures, back, limit, color);
+    }
 
+    return 0;
 }
