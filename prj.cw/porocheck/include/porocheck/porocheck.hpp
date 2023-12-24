@@ -48,13 +48,9 @@ struct std::hash<UniqueNode>
     @param in Изображение котрое надо преобразовать 
     @param back Параметр цвета фона, в зависимости от которого цвета будут или не будут инвертированы 
 */
-void bin(cv::Mat& im, const int& back);
+void bin(cv::Mat& im, const uchar& back);
 
-/**
-    @brief Функция, для проверки границ цвета. 
-    @param color_to_checkЦвет, выход за диапазон которого требуется проверить 
-*/
-void CheckColor(int& color_to_check);
+
 
 /**
     @brief Функция для нахождения уникальных пар (слой, компонента) на изображении. 
@@ -83,13 +79,16 @@ std::vector<UniqueNode> FindRocks(const int& limit, const lemon::ListGraph& g, l
     @param back Цвет фона 
     @param images Сыылка на массив изначальных изображений, часть которых требуется скопировать 
 */
-void ColorRocks(std::vector<UniqueNode>& rocks, const std::vector<int>& filling_color, const int& back, const std::vector<cv::Mat>& images);
+void ColorRocks(std::vector<UniqueNode>& rocks, const cv::Vec3b& filling_color, const uchar& back, const std::vector<cv::Mat>& images);
 
 /**
     @brief Функция для проверки разметки пор на изображениях. 
     @param background Цвет Поры - фона
 */
-void PoroCheck(std::vector<cv::Mat>& pics, const int& back);
+void PoroCheck(std::vector<cv::Mat>& pics, const uchar& back, const int limit, cv::Vec3b& color);
 
+void ShowIntersection(const cv::Mat& one, const cv::Mat& second);
+
+std::vector<cv::Mat> ReadImages(std::string dirname, std::string file, int n);
 
 #endif

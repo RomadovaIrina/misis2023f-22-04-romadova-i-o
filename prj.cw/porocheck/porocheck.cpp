@@ -5,7 +5,7 @@ void build_check() {
 }
 
 //костыль, которого быть не должно но пока он есть
-void bin(cv::Mat& im, const int& back) {
+void bin(cv::Mat& im, const uchar& back) {
     if (back == 0) {
 
     cv::threshold(im, im, 128, 255, cv::THRESH_BINARY);
@@ -13,11 +13,6 @@ void bin(cv::Mat& im, const int& back) {
     else if (back == 255) {
 
         cv::threshold(im, im, 128, 255, cv::THRESH_BINARY_INV);
-    }
-}
-void CheckColor(int& color_to_check) {
-    if (color_to_check < 0 || color_to_check>255) {
-        throw  std::out_of_range("Color out of range");
     }
 }
 
@@ -63,7 +58,8 @@ std::vector<UniqueNode> FindRocks(const int& limit, const lemon::ListGraph& g, l
     return to_color;
 }
 
-void ColorRocks(std::vector<UniqueNode>& rocks, const std::vector<int>& filling_color, const int& back, const std::vector<cv::Mat>& images) {
+
+void ColorRocks(std::vector<UniqueNode>& rocks, const cv::Vec3b& filling_color, const uchar& back, const std::vector<cv::Mat>& images) {
     for (const auto& el : rocks) {
         cv::Mat orig_img = images[el.layer - 1];
         cv::Mat labeled_img(orig_img.size(), CV_32S);
@@ -71,7 +67,7 @@ void ColorRocks(std::vector<UniqueNode>& rocks, const std::vector<int>& filling_
 
         std::vector<cv::Vec3b> colors(labels_amount);
         for (int label = 1; label < labels_amount; ++label) {
-            colors[label] = cv::Vec3b(255-back, 255-back, 255-back);
+            colors[label] = cv::Vec3b(255 - back, 255 - back, 255 - back);
         }
         // задаем цвета фону и той компоненте, которую надо покрасить
         colors[0] = cv::Vec3b(back, back, back);
@@ -94,7 +90,7 @@ void ColorRocks(std::vector<UniqueNode>& rocks, const std::vector<int>& filling_
 
 }
 
-void PoroCheck(std::vector<cv::Mat>& pics, const int& back) {
+void PoroCheck(std::vector<cv::Mat>& pics, const uchar& back, const int limit, cv::Vec3b& color) {
     for (int t = 0; t < pics.size(); t++) {
         bin(pics[t], back);
     }
@@ -108,7 +104,7 @@ void PoroCheck(std::vector<cv::Mat>& pics, const int& back) {
         //создаем размеченные изображения 
         cv::Mat connected_1(pics[p].size(), CV_32S);
         cv::Mat connected_2(pics[p + 1].size(), CV_32S);
-        //находим кол-во компоненет
+        ////находим кол-во компоненет
         int labeled_1 = cv::connectedComponents(pics[p], connected_1, 8);
         int labeled_2 = cv::connectedComponents(pics[p + 1], connected_2, 8);
         //запоминаем размеры изображения
@@ -123,6 +119,7 @@ void PoroCheck(std::vector<cv::Mat>& pics, const int& back) {
         cv::Mat stats, center;
         // проходим маску пересечений
         int mask_n = cv::connectedComponentsWithStats(intersect, intersect_label, stats, center, 8);
+
         for (int comp = 1; comp < mask_n; comp += 1) {
             bool found = 0;
             int border_x = stats.at<int>(comp, cv::CC_STAT_LEFT);
@@ -158,24 +155,38 @@ void PoroCheck(std::vector<cv::Mat>& pics, const int& back) {
 
     }
     //анализ графа 
-    int limit;
-    std::cout << " Enter limit weight ";
-    std::cin >> limit;
     std::vector<UniqueNode> to_color = FindRocks(limit, g, node_set);
     if (to_color.empty()) {
         std::cout << "Checked, no dandling rocks detected" << std::endl;
     }
     else {
         std::cout << "Dandling rocks detected, check markup" << std::endl;
-        std::cout << "\n" << "Enter color to fill components ";
-        std::vector<int> color(3);
-        for (int t = 0; t < color.size(); t += 1) {
-            int temp;
-            std::cin >> color[t];
-            CheckColor(color[t]);
-        }
         ColorRocks(to_color, color, back, pics);
-        std::cout << "\nColored";
+        std::cout << "\nDandling rocks colored";
     }
 
+}
+
+
+
+
+
+std::vector<cv::Mat> ReadImages(std::string dirname, std::string file, int n) {
+    std::vector<cv::Mat> images;
+    for (int i = 1; i < n + 1; i += 1) {
+        std::string filename = dirname;
+        filename.insert(filename.length(), file);
+        filename.insert(filename.length(), std::to_string(i));
+        filename.insert(filename.length(), ".png");
+        //std::cout << filename << "\n";
+        images.push_back(cv::imread(filename, cv::IMREAD_GRAYSCALE));
+    }
+    return images;
+}
+
+void ShowIntersection(const cv::Mat& one, const cv::Mat& second) {
+    cv::Mat intersect = one & second;
+    // проходим маску пересечений
+    cv::imshow("intersection", intersect);
+    cv::waitKey(0);
 }
