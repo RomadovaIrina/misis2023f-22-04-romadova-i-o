@@ -1,4 +1,9 @@
-# __Паттерн Синглтон (Singleton) Одиночка__
+<div style="text-align: right">Выполнила:</div>
+<div style="text-align: right">студентка 2 курса,</div>
+<div style="text-align: right">гр. БПМ-22-4 Ромадова Ирина Олеговна</div>
+
+# Паттерн Singleton 
+
 ## __Определение__
 
 
