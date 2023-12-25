@@ -16,8 +16,8 @@
 -	•	Гарантировать заданное количество экземпляров (Далее речи идет об одном)
 ### Особенности использования паттерна:
 1.	Создание единственного экземпляра: У класса есть один экземпляр и далее он просто ссылается на себя
-2.	Предоставляет доступ из любой точки программы- глобальность (Глобальный доступ к синглтону обеспечивается при использовании статического метода, который позволяет получить единственный экземпляр этого класса)
-3.	Как следствие, проблемы с многопоточностью.
+2.	Предоставляет доступ из любой точки программы- глобальность
+3.	Возможны проблемы с многопоточностью.
 4.	В отличие от глобальной переменной, состояние синглтона легче отследить
 5.	Используется отложенная инициализация (создание происходит по необходимости)
 6.	Усложняет тестирование и отслеживание зависимостей:
@@ -27,7 +27,7 @@
   -	Состояние синглтона может меняться по мере выполнения программы
 ## Вариант реализации LeakySingleto:
 
-Здесь может возникнуть утечка памяти.
+Здесь может возникнуть утечка памяти. Но в данном случае удобнее контролировать время жизни объекта
 ```C++
 
 class LeakySingleton {
@@ -57,30 +57,42 @@ public:
 
 ## Синглтон Майерса 
 
-Написать  информацию прь синглтон Майерса и другие
+Использование синглтона Майерса упрощает процесс очистки памяти, то есть сложнее очистить что-то другое
 
 ```C++
-class MaersSingleton {
+class MeyersSingleton {
 private:
-    MaersSingleton() = default;
-    MaersSingleton(const MaersSingleton&) = delete;
-    int answer_to_all = 0;
-    static std::mutex mutex;
+    MeyersSingleton() = default;
+    MeyersSingleton(const MeyersSingleton&) = delete;
+    MeyersSingleton(MeyersSingleton&& other) = delete;
+
+    ~MeyersSingleton() {};
+    int example_value_ = 100;
 public:
-    void setAnswerToAll(int answer_to_all) noexcept {
-        std::lock_guard(mutex);
-        this->answer_to_all = answer_to_all;
+
+
+    MeyersSingleton& operator =(const MeyersSingleton& other) = delete;
+    MeyersSingleton& operator=(MeyersSingleton&& other) = delete;
+    
+    int answer_to_all = 42;
+    int GetExapleValue() const {
+        return example_value_;
     }
-    int getAnswerToAll() const noexcept {
-        return answer_to_all;
+    void SetExampleValue(const int& other) {
+        example_value_ = other;
     }
-    static MaersSingleton& getInstance() {
-        static MaersSingleton instance;
+    static MeyersSingleton& getInstance() {
+        static MeyersSingleton instance;
         return instance;
     }
-
 };
 ```
 ## Заключение:
 
 Существуют и другие паттерны программирования и значит стоит внимательно выбирать какой паттерн следует использовать, потому что синглтон не универсален и при недостаточно хорошей реализации может создать проблемы (утечки памяти, проблемы с многопоточностью)
+
+##### Источники 
+1. [Взято за основу как пример LeakySingleton] https://gist.github.com/pazdera/1098119
+2. https://laristra.github.io/flecsi/src/developer-guide/patterns/meyers_singleton.html
+3. https://refactoring.guru/design-patterns/singleton
+4. https://www.modernescpp.com/index.php/thread-safe-initialization-of-a-singleton/
