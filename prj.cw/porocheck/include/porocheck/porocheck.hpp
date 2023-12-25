@@ -84,6 +84,7 @@ void ColorRocks(std::vector<UniqueNode>& rocks, const cv::Vec3b& filling_color, 
 /**
     @brief Функция для проверки разметки пор на изображениях. 
     @param background Цвет Поры - фона
+    ВОЗВРАЩАТЬ ВЕКТОР МАТОВ
 */
 void PoroCheck(std::vector<cv::Mat>& pics, const uchar& back, const int limit, cv::Vec3b& color);
 

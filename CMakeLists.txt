@@ -22,6 +22,7 @@ endif()
 find_package(OpenCV REQUIRED)
 find_package(LEMON REQUIRED)
 find_package(Doxygen REQUIRED)
+find_package(nlohmann_json REQUIRED)
 
 add_subdirectory ("prj.cw")
 add_subdirectory ("prj.codeforces")
