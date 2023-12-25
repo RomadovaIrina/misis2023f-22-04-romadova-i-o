@@ -87,9 +87,4 @@ void ColorRocks(std::vector<UniqueNode>& rocks, const cv::Vec3b& filling_color, 
     ÂÎÇÂĞÀÙÀÒÜ ÂÅÊÒÎĞ ÌÀÒÎÂ
 */
 void PoroCheck(std::vector<cv::Mat>& pics, const uchar& back, const int limit, cv::Vec3b& color);
-
-void ShowIntersection(const cv::Mat& one, const cv::Mat& second);
-
-std::vector<cv::Mat> ReadImages(std::string dirname, std::string file, int n);
-
 #endif

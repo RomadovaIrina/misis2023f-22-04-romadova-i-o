@@ -44,6 +44,22 @@ int main(int argc, char* argv[]) {
     std::ifstream file(argv[1]);
     nlohmann::json j;
     file >> j;
-    std::string filename(j["filename_1"]);
-    std::cout << filename;
+    std::vector<cv::Mat> pictures;
+    std::string filename_1(j["filename_1"]);
+    std::string filename_2(j["filename_2"]);
+    std::string filename_3(j["filename_3"]);
+    std::string filename_4(j["filename_4"]);
+    std::string filename_5(j["filename_5"]);
+
+    pictures.push_back(cv::Mat(cv::imread(filename_1, cv::IMREAD_GRAYSCALE)));
+    pictures.push_back(cv::Mat(cv::imread(filename_2, cv::IMREAD_GRAYSCALE)));
+    pictures.push_back(cv::Mat(cv::imread(filename_3, cv::IMREAD_GRAYSCALE)));
+    pictures.push_back(cv::Mat(cv::imread(filename_4, cv::IMREAD_GRAYSCALE)));
+    pictures.push_back(cv::Mat(cv::imread(filename_5, cv::IMREAD_GRAYSCALE)));
+
+    uchar back = *argv[2];
+    int limit = 2;
+
+    PoroCheck(pictures, back, 2, cv::Vec3b(250, 30, 180));
+    
 }

@@ -167,26 +167,3 @@ void PoroCheck(std::vector<cv::Mat>& pics, const uchar& back, const int limit, c
 
 }
 
-
-
-
-
-std::vector<cv::Mat> ReadImages(std::string dirname, std::string file, int n) {
-    std::vector<cv::Mat> images;
-    for (int i = 1; i < n + 1; i += 1) {
-        std::string filename = dirname;
-        filename.insert(filename.length(), file);
-        filename.insert(filename.length(), std::to_string(i));
-        filename.insert(filename.length(), ".png");
-        //std::cout << filename << "\n";
-        images.push_back(cv::imread(filename, cv::IMREAD_GRAYSCALE));
-    }
-    return images;
-}
-
-void ShowIntersection(const cv::Mat& one, const cv::Mat& second) {
-    cv::Mat intersect = one & second;
-    // проходим маску пересечений
-    cv::imshow("intersection", intersect);
-    cv::waitKey(0);
-}
