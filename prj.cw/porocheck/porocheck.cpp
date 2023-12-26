@@ -129,25 +129,31 @@ void PoroCheck(std::vector<cv::Mat>& pics, const uchar& back, const int limit, c
             for (int c = border_x; c < border_x + width; c += 1) {
                 uchar pixel = intersect.at<uchar>(border_y, c);
                 if (pixel == 255) {
-                    int c_1 = connected_1.at<int>(border_y, c);
-                    int c_2 = connected_2.at<int>(border_y, c);
-                    UniqueNode pair_1{ p + 1, c_1 };
-                    UniqueNode pair_2{ p + 2, c_2 };
-                    g.addEdge(uniqueNodes[pair_1], uniqueNodes[pair_2]);
-                    found = 1;
-                    break;
+                    int c_temp = intersect_label.at<int>(border_y, c);
+                    if (c_temp == comp) {
+                        int c_1 = connected_1.at<int>(border_y, c);
+                        int c_2 = connected_2.at<int>(border_y, c);
+                        UniqueNode pair_1{ p + 1, c_1 };
+                        UniqueNode pair_2{ p + 2, c_2 };
+                        g.addEdge(uniqueNodes[pair_1], uniqueNodes[pair_2]);
+                        found = 1;
+                        break;
+                    }
                 }
             }
             if (!found) {
                 for (int r = border_y; r < border_y + height; r += 1) {
                     uchar pixel = intersect.at<uchar>(r, border_x);
                     if (pixel == 255) {
-                        int c_1 = connected_1.at<int>(r, border_x);
-                        int c_2 = connected_2.at<int>(r, border_x);
-                        UniqueNode pair_1{ p + 1, c_1 };
-                        UniqueNode pair_2{ p + 2, c_2 };
-                        g.addEdge(uniqueNodes[pair_1], uniqueNodes[pair_2]);
-                        break;
+                        int c_temp = intersect_label.at<int>(r, border_x);
+                        if (c_temp == comp) {
+                            int c_1 = connected_1.at<int>(r, border_x);
+                            int c_2 = connected_2.at<int>(r, border_x);
+                            UniqueNode pair_1{ p + 1, c_1 };
+                            UniqueNode pair_2{ p + 2, c_2 };
+                            g.addEdge(uniqueNodes[pair_1], uniqueNodes[pair_2]);
+                            break;
+                        }
                     }
                 }
             }

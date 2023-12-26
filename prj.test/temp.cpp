@@ -62,6 +62,6 @@ int main(int argc, char* argv[]) {
 
         cv::Vec3b color(std::stoi(argv[2]), std::stoi(argv[3]), std::stoi(argv[4]));
 
-        PoroCheck(pictures, back, limit, color);
+        PoroCheck(pictures, 0, limit, color);
     
 }

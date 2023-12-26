@@ -154,8 +154,7 @@ void PoroCheck(std::vector<cv::Mat>& pics) {
         // пересекаем маски
         cv::Mat intersect = pics[p] & pics[p + 1];
 
-        cv::imshow("boba", intersect);
-        cv::waitKey(0);
+       
 
         cv::Mat intersect_label(pics[p].size(), CV_32S);
         cv::Mat stats, center;
@@ -172,61 +171,52 @@ void PoroCheck(std::vector<cv::Mat>& pics) {
             for (int c = border_x; c < border_x + width; c += 1) {
                 uchar pixel = intersect.at<uchar>(border_y, c);
                 if (pixel == 255) {
-                    int c_1 = connected_1.at<int>(border_y, c);
-                    int c_2 = connected_2.at<int>(border_y, c);
-                    UniqueNode pair_1{ p + 1, c_1 };
-                    UniqueNode pair_2{ p + 2, c_2 };
+                    int c_temp = intersect_label.at<int>(border_y, c);
+                    if (c_temp == comp) {
 
-                    if (uniqueNodes.find(pair_1) == uniqueNodes.end()) {
-                        lemon::ListGraph::Node vertex = g.addNode();
-                        uniqueNodes[pair_1] = vertex;
-                        node_set[vertex] = pair_1;
-                    }if (uniqueNodes.find(pair_2) == uniqueNodes.end()) {
-                        lemon::ListGraph::Node vertex = g.addNode();
-                        uniqueNodes[pair_2] = vertex;
-                        node_set[vertex] = pair_2;
+                        int c_1 = connected_1.at<int>(border_y, c);
+                        int c_2 = connected_2.at<int>(border_y, c);
+                        UniqueNode pair_1{ p + 1, c_1 };
+                        UniqueNode pair_2{ p + 2, c_2 };
+
+                        std::cout << "(" << pair_1.layer << " " << pair_1.component << ")";
+                        std::cout << "(" << pair_2.layer << " " << pair_2.component << ")";
+                        std::cout << "\n";
+                        g.addEdge(uniqueNodes[pair_1], uniqueNodes[pair_2]);
+
+                        found = 1;
+                        break;
                     }
-
-                    std::cout << "(" << pair_1.layer << " " << pair_1.component << ")";
-                    std::cout << "(" << pair_2.layer << " " << pair_2.component << ")";
-                    std::cout << "\n";
-                    g.addEdge(uniqueNodes[pair_1], uniqueNodes[pair_2]);
-                    
-                    found = 1;
-                    break;
                 }
             }
             if (!found) {
                 for (int r = border_y; r < border_y + height; r += 1) {
                     uchar pixel = intersect.at<uchar>(r, border_x);
                     if (pixel == 255) {
-                        int c_1 = connected_1.at<int>(r, border_x);
-                        int c_2 = connected_2.at<int>(r, border_x);
-                        UniqueNode pair_1{ p + 1, c_1 };
-                        UniqueNode pair_2{ p + 2, c_2 };
+                        int c_temp = intersect_label.at<int>(r, border_x);
+                        if (c_temp == comp) {
+                            int c_1 = connected_1.at<int>(r, border_x);
+                            int c_2 = connected_2.at<int>(r, border_x);
+                            UniqueNode pair_1{ p + 1, c_1 };
+                            UniqueNode pair_2{ p + 2, c_2 };
 
-                        if (uniqueNodes.find(pair_1) == uniqueNodes.end()) {
-                            lemon::ListGraph::Node vertex = g.addNode();
-                            uniqueNodes[pair_1] = vertex;
-                            node_set[vertex] = pair_1;
-                        }if (uniqueNodes.find(pair_2) == uniqueNodes.end()) {
-                            lemon::ListGraph::Node vertex = g.addNode();
-                            uniqueNodes[pair_2] = vertex;
-                            node_set[vertex] = pair_2;
+                            std::cout << "(" << pair_1.layer << " " << pair_1.component << ")";
+                            std::cout << "(" << pair_2.layer << " " << pair_2.component << ")";
+                            std::cout << "\n";
+                            g.addEdge(uniqueNodes[pair_1], uniqueNodes[pair_2]);
+                            break;
                         }
-
-                        std::cout << "(" << pair_1.layer << " " << pair_1.component << ")";
-                        std::cout << "(" << pair_2.layer << " " << pair_2.component << ")";
-                        std::cout << "\n";
-                        g.addEdge(uniqueNodes[pair_1], uniqueNodes[pair_2]);
-                        break;
                     }
                 }
             }
         }
 
     }
-    
+    /*for (const auto& entry : uniqueNodes) {
+        const UniqueNode& key = entry.first;
+        const lemon::ListGraph::Node& value = entry.second;
+        std::cout << "(" << key.layer << " " << key.component << ")" << "\n";
+    }*/
     //анализ графа 
     int limit;
     std::cout << " Enter limit weight ";
@@ -258,9 +248,9 @@ int main() {
     {
         pictures.push_back(cv::imread("C:/Users/romad/source/repos/temporary/misis2023f-22-04-romadova-i-o/input_pictures/t_2_1.png", cv::IMREAD_GRAYSCALE));
         pictures.push_back(cv::imread("C:/Users/romad/source/repos/temporary/misis2023f-22-04-romadova-i-o/input_pictures/t_2_2.png", cv::IMREAD_GRAYSCALE));
-        //pictures.push_back(cv::imread("C:/Users/romad/source/repos/temporary/misis2023f-22-04-romadova-i-o/input_pictures/t_2_3.png", cv::IMREAD_GRAYSCALE));
-        //pictures.push_back(cv::imread("C:/Users/romad/source/repos/temporary/misis2023f-22-04-romadova-i-o/input_pictures/t_2_4.png", cv::IMREAD_GRAYSCALE));
-        //pictures.push_back(cv::imread("C:/Users/romad/source/repos/temporary/misis2023f-22-04-romadova-i-o/input_pictures/t_2_5.png", cv::IMREAD_GRAYSCALE));
+        pictures.push_back(cv::imread("C:/Users/romad/source/repos/temporary/misis2023f-22-04-romadova-i-o/input_pictures/t_2_3.png", cv::IMREAD_GRAYSCALE));
+        pictures.push_back(cv::imread("C:/Users/romad/source/repos/temporary/misis2023f-22-04-romadova-i-o/input_pictures/t_2_4.png", cv::IMREAD_GRAYSCALE));
+        pictures.push_back(cv::imread("C:/Users/romad/source/repos/temporary/misis2023f-22-04-romadova-i-o/input_pictures/t_2_5.png", cv::IMREAD_GRAYSCALE));
         
 
     }
