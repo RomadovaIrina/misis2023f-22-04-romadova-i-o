@@ -48,13 +48,12 @@ void CheckColor(int& color_to_check ){
     }
 }
 
-void FillUniqueNodes(const int& height, const int& width, const int& amount, lemon::ListGraph& graph, const int& picture_index,
+void FillUniqueNodes(const int& height, const int& width, int amount, lemon::ListGraph& graph, int picture_index,
     lemon::ListGraph::NodeMap<UniqueNode>& node_set, std::unordered_map<UniqueNode, lemon::ListGraph::Node>& UniqueNodes) {
 
     cv::Mat labels(height, width, CV_32S);
     for (int c = 1; c < amount; c += 1) {
         UniqueNode pair{ picture_index, c };
-        // кажется все вершины стоит добавлять еще до начала их стыковки
         if (UniqueNodes.find(pair) == UniqueNodes.end()) {
             lemon::ListGraph::Node vertex = graph.addNode();
             UniqueNodes[pair] = vertex;
@@ -70,6 +69,7 @@ std::vector<UniqueNode> FindRocks(const int& limit, const lemon::ListGraph& g,  
     lemon::connectedComponents(g, abc);
 
     std::vector<int> weight(lemon::countConnectedComponents(g));
+    //std::cout<<"\n" << lemon::countConnectedComponents(g) << std::endl;
     std::map<int, std::vector<UniqueNode>> comp_list;
     int counter = 0;
     std::cout << std::endl;
@@ -79,13 +79,13 @@ std::vector<UniqueNode> FindRocks(const int& limit, const lemon::ListGraph& g,  
         comp_list[curr].push_back(node_set[nodeit]);
         weight[curr] += 1;
     }
-    /*for (const auto& el : comp_list) {
+    for (const auto& el : comp_list) {
     std::cout << el.first << " -> " << "{ ";
     for (const auto& el2 : el.second) {
         std::cout << "(" << el2.layer << " " << el2.component << ") ";
     }
     std::cout << "} " << weight[el.first] << "\n";
-    }*/
+    }
 
     std::vector<UniqueNode> to_color;
     for (int i = 0; i < weight.size(); i += 1) {
@@ -93,6 +93,7 @@ std::vector<UniqueNode> FindRocks(const int& limit, const lemon::ListGraph& g,  
             to_color.insert(to_color.end(), comp_list[i].begin(), comp_list[i].end());
         }
     }
+    std::cout << std::endl;
     return to_color;
 }
 void ColorRocks(std::vector<UniqueNode>& rocks, const std::vector<int>& filling_color, const std::vector<cv::Mat>& images) {
@@ -145,15 +146,23 @@ void PoroCheck(std::vector<cv::Mat>& pics) {
         //запоминаем размеры изображения
         int height = pics[p].rows;
         int width = pics[p].cols;
+        int pic_1 = p + 1;
+        int pc_2 = p + 2;
         //Заполняем граф уникальными вершинами
-        FillUniqueNodes(height, width, labeled_1, g, p + 1, node_set, uniqueNodes);
-        FillUniqueNodes(height, width, labeled_2, g, p + 2, node_set, uniqueNodes);
+        FillUniqueNodes(height, width, labeled_1, g, pic_1, node_set, uniqueNodes);
+        FillUniqueNodes(height, width, labeled_2, g, pc_2, node_set, uniqueNodes);
         // пересекаем маски
         cv::Mat intersect = pics[p] & pics[p + 1];
+
+        cv::imshow("boba", intersect);
+        cv::waitKey(0);
+
         cv::Mat intersect_label(pics[p].size(), CV_32S);
         cv::Mat stats, center;
         // проходим маску пересечений
         int mask_n = cv::connectedComponentsWithStats(intersect, intersect_label, stats, center, 8);
+        std::cout << mask_n << std::endl;
+
         for (int comp = 1; comp < mask_n; comp += 1) {
             bool found = 0;
             int border_x = stats.at<int>(comp, cv::CC_STAT_LEFT);
@@ -167,7 +176,22 @@ void PoroCheck(std::vector<cv::Mat>& pics) {
                     int c_2 = connected_2.at<int>(border_y, c);
                     UniqueNode pair_1{ p + 1, c_1 };
                     UniqueNode pair_2{ p + 2, c_2 };
+
+                    if (uniqueNodes.find(pair_1) == uniqueNodes.end()) {
+                        lemon::ListGraph::Node vertex = g.addNode();
+                        uniqueNodes[pair_1] = vertex;
+                        node_set[vertex] = pair_1;
+                    }if (uniqueNodes.find(pair_2) == uniqueNodes.end()) {
+                        lemon::ListGraph::Node vertex = g.addNode();
+                        uniqueNodes[pair_2] = vertex;
+                        node_set[vertex] = pair_2;
+                    }
+
+                    std::cout << "(" << pair_1.layer << " " << pair_1.component << ")";
+                    std::cout << "(" << pair_2.layer << " " << pair_2.component << ")";
+                    std::cout << "\n";
                     g.addEdge(uniqueNodes[pair_1], uniqueNodes[pair_2]);
+                    
                     found = 1;
                     break;
                 }
@@ -180,6 +204,20 @@ void PoroCheck(std::vector<cv::Mat>& pics) {
                         int c_2 = connected_2.at<int>(r, border_x);
                         UniqueNode pair_1{ p + 1, c_1 };
                         UniqueNode pair_2{ p + 2, c_2 };
+
+                        if (uniqueNodes.find(pair_1) == uniqueNodes.end()) {
+                            lemon::ListGraph::Node vertex = g.addNode();
+                            uniqueNodes[pair_1] = vertex;
+                            node_set[vertex] = pair_1;
+                        }if (uniqueNodes.find(pair_2) == uniqueNodes.end()) {
+                            lemon::ListGraph::Node vertex = g.addNode();
+                            uniqueNodes[pair_2] = vertex;
+                            node_set[vertex] = pair_2;
+                        }
+
+                        std::cout << "(" << pair_1.layer << " " << pair_1.component << ")";
+                        std::cout << "(" << pair_2.layer << " " << pair_2.component << ")";
+                        std::cout << "\n";
                         g.addEdge(uniqueNodes[pair_1], uniqueNodes[pair_2]);
                         break;
                     }
@@ -188,6 +226,7 @@ void PoroCheck(std::vector<cv::Mat>& pics) {
         }
 
     }
+    
     //анализ графа 
     int limit;
     std::cout << " Enter limit weight ";
@@ -214,13 +253,15 @@ void PoroCheck(std::vector<cv::Mat>& pics) {
 int main() {
 
     //инициализация данных
-    int n = 4;
+    int n = 2;
     std::vector<cv::Mat> pictures;
     {
-        pictures.push_back(cv::imread("C:/Users/romad/source/repos/PoroMarker/ex_1.png", cv::IMREAD_GRAYSCALE));
-        pictures.push_back(cv::imread("C:/Users/romad/source/repos/PoroMarker/ex_2.png", cv::IMREAD_GRAYSCALE));
-        pictures.push_back(cv::imread("C:/Users/romad/source/repos/PoroMarker/ex_3.png", cv::IMREAD_GRAYSCALE));
-        pictures.push_back(cv::imread("C:/Users/romad/source/repos/PoroMarker/ex_4.png", cv::IMREAD_GRAYSCALE));
+        pictures.push_back(cv::imread("C:/Users/romad/source/repos/temporary/misis2023f-22-04-romadova-i-o/input_pictures/t_2_1.png", cv::IMREAD_GRAYSCALE));
+        pictures.push_back(cv::imread("C:/Users/romad/source/repos/temporary/misis2023f-22-04-romadova-i-o/input_pictures/t_2_2.png", cv::IMREAD_GRAYSCALE));
+        //pictures.push_back(cv::imread("C:/Users/romad/source/repos/temporary/misis2023f-22-04-romadova-i-o/input_pictures/t_2_3.png", cv::IMREAD_GRAYSCALE));
+        //pictures.push_back(cv::imread("C:/Users/romad/source/repos/temporary/misis2023f-22-04-romadova-i-o/input_pictures/t_2_4.png", cv::IMREAD_GRAYSCALE));
+        //pictures.push_back(cv::imread("C:/Users/romad/source/repos/temporary/misis2023f-22-04-romadova-i-o/input_pictures/t_2_5.png", cv::IMREAD_GRAYSCALE));
+        
 
     }
     PoroCheck(pictures);
