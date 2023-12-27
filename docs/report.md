@@ -1,6 +1,7 @@
 <div style="text-align: right">Выполнила:</div>
 <div style="text-align: right">студентка 2 курса,</div>
 <div style="text-align: right">гр. БПМ-22-4 Ромадова Ирина Олеговна</div>
+<div style="text-align: right">27.12.2023</div>
 
 # Паттерн Singleton 
 
@@ -94,6 +95,6 @@ public:
 
 ##### Источники 
 1. [Взято за основу как пример LeakySingleton] https://gist.github.com/pazdera/1098119
-2. https://laristra.github.io/flecsi/src/developer-guide/patterns/meyers_singleton.html
+2. [Общие сведения о Синглтоне Майерса] https://laristra.github.io/flecsi/src/developer-guide/patterns/meyers_singleton.html
 3. https://refactoring.guru/design-patterns/singleton
 4. https://www.modernescpp.com/index.php/thread-safe-initialization-of-a-singleton/
