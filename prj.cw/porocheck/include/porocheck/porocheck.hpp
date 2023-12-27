@@ -41,6 +41,13 @@ struct std::hash<UniqueNode>
     }
 };
 
+/**
+    @brief Структура, для хранения слоя и компонент связности, которые должны быть отмечены
+*/
+struct ToColor {
+    int layer;
+    std::vector<int> components;
+};
 
 
 /**
@@ -70,21 +77,20 @@ void FillUniqueNodes(const int& height, const int& width, const int& amount, lem
     @param graph Граф, в котором требуется искать такие компоненты 
     @param node_set Список значений вершин графа 
 */
-std::vector<UniqueNode> FindRocks(const int& limit, const lemon::ListGraph& g, lemon::ListGraph::NodeMap<UniqueNode>& node_set);
+std::vector<ToColor> FindRocks(const int& limit, const lemon::ListGraph& g, lemon::ListGraph::NodeMap<UniqueNode>& node_set);
 
 /**
     @brief Функция для покраски висячего камня на изображении, полученный из функции FindRocks. 
-    @param rocks Массив уникальных пар (слой, компонента), которые требуется покрасить 
+    @param rocks Массив уникальных пар (слой, компоненты), которые требуется покрасить 
     @param filling_color Цвет, которым требуется покрасить висячие камни 
     @param back Цвет фона 
     @param images Сыылка на массив изначальных изображений, часть которых требуется скопировать 
 */
-void ColorRocks(std::vector<UniqueNode>& rocks, const cv::Vec3b& filling_color, const uchar& back, const std::vector<cv::Mat>& images);
+void ColorRocks(std::vector<ToColor>& rocks, const cv::Vec3b& filling_color, const uchar& back, const std::vector<cv::Mat>& images);
 
 /**
     @brief Функция для проверки разметки пор на изображениях. 
     @param background Цвет Поры - фона
-    ВОЗВРАЩАТЬ ВЕКТОР МАТОВ
 */
 void PoroCheck(std::vector<cv::Mat>& pics, const uchar& back, const int limit, cv::Vec3b& color);
 #endif

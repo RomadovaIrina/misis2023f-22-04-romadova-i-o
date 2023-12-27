@@ -32,7 +32,7 @@ void FillUniqueNodes(const int& height, const int& width, const int& amount, lem
 
 }
 
-std::vector<UniqueNode> FindRocks(const int& limit, const lemon::ListGraph& g, lemon::ListGraph::NodeMap<UniqueNode>& node_set) {
+std::vector<ToColor> FindRocks(const int& limit, const lemon::ListGraph& g, lemon::ListGraph::NodeMap<UniqueNode>& node_set) {
 
 
     lemon::ListGraph::NodeMap<int> abc(g);
@@ -55,11 +55,31 @@ std::vector<UniqueNode> FindRocks(const int& limit, const lemon::ListGraph& g, l
             to_color.insert(to_color.end(), comp_list[i].begin(), comp_list[i].end());
         }
     }
-    return to_color;
+    std::vector<ToColor> error_layers;
+
+    for (const auto& node : to_color) {
+        bool layer_found = false;
+        //если слой уже есть, то просто добавляем к его компонентам компоненты
+        for (auto& entry : error_layers) {
+            if (entry.layer == node.layer) {
+                entry.components.push_back(node.component);
+                layer_found = 1;
+                break;
+            }
+        }
+        // Если слоя нет, то создаем пару слой-компоненты
+        if (!layer_found) {
+            ToColor new_entry;
+            new_entry.layer = node.layer;
+            new_entry.components.push_back(node.component);
+            error_layers.push_back(new_entry);
+        }
+    }
+    return error_layers;
 }
 
 
-void ColorRocks(std::vector<UniqueNode>& rocks, const cv::Vec3b& filling_color, const uchar& back, const std::vector<cv::Mat>& images) {
+void ColorRocks(std::vector<ToColor>& rocks, const cv::Vec3b& filling_color, const uchar& back, const std::vector<cv::Mat>& images) {
     for (const auto& el : rocks) {
         cv::Mat orig_img = images[el.layer - 1];
         cv::Mat labeled_img(orig_img.size(), CV_32S);
@@ -71,7 +91,9 @@ void ColorRocks(std::vector<UniqueNode>& rocks, const cv::Vec3b& filling_color, 
         }
         // задаем цвета фону и той компоненте, которую надо покрасить
         colors[0] = cv::Vec3b(back, back, back);
-        colors[el.component] = cv::Vec3b(filling_color[0], filling_color[1], filling_color[2]);
+        for (int component : el.components) {
+            colors[component] = cv::Vec3b(filling_color[0], filling_color[1], filling_color[2]);
+        }
 
         cv::Mat colored_img(orig_img.size(), CV_8UC3);
         for (int r = 0; r < colored_img.rows; ++r) {
@@ -82,8 +104,6 @@ void ColorRocks(std::vector<UniqueNode>& rocks, const cv::Vec3b& filling_color, 
             }
         }
         std::string filename = ".png";
-        filename.insert(0, std::to_string(el.component));
-        filename.insert(0, " ");
         filename.insert(0, std::to_string(el.layer));
         cv::imwrite(filename, colored_img);
     }
@@ -161,7 +181,7 @@ void PoroCheck(std::vector<cv::Mat>& pics, const uchar& back, const int limit, c
 
     }
     //анализ графа 
-    std::vector<UniqueNode> to_color = FindRocks(limit, g, node_set);
+    std::vector<ToColor> to_color = FindRocks(limit, g, node_set);
     if (to_color.empty()) {
         std::cout << "Checked, no dandling rocks detected" << std::endl;
     }

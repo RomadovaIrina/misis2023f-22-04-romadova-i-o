@@ -38,6 +38,11 @@ struct std::hash<UniqueNode>
     }
 };
 
+struct ToColor {
+    int layer;
+    std::vector<int> components;
+};
+
 //костыль, которого быть не должно но пока он есть
 void bin(cv::Mat& im) {
     cv::threshold(im, im, 128, 255, cv::THRESH_BINARY);
@@ -62,7 +67,7 @@ void FillUniqueNodes(const int& height, const int& width, int amount, lemon::Lis
     }
 
 }
-std::vector<UniqueNode> FindRocks(const int& limit, const lemon::ListGraph& g,  lemon::ListGraph::NodeMap<UniqueNode>& node_set) {
+std::vector<ToColor> FindRocks(const int& limit, const lemon::ListGraph& g,  lemon::ListGraph::NodeMap<UniqueNode>& node_set) {
 
 
     lemon::ListGraph::NodeMap<int> abc(g);
@@ -79,13 +84,7 @@ std::vector<UniqueNode> FindRocks(const int& limit, const lemon::ListGraph& g,  
         comp_list[curr].push_back(node_set[nodeit]);
         weight[curr] += 1;
     }
-    for (const auto& el : comp_list) {
-    std::cout << el.first << " -> " << "{ ";
-    for (const auto& el2 : el.second) {
-        std::cout << "(" << el2.layer << " " << el2.component << ") ";
-    }
-    std::cout << "} " << weight[el.first] << "\n";
-    }
+ 
 
     std::vector<UniqueNode> to_color;
     for (int i = 0; i < weight.size(); i += 1) {
@@ -93,10 +92,29 @@ std::vector<UniqueNode> FindRocks(const int& limit, const lemon::ListGraph& g,  
             to_color.insert(to_color.end(), comp_list[i].begin(), comp_list[i].end());
         }
     }
-    std::cout << std::endl;
-    return to_color;
+    std::vector<ToColor> error_layers;
+
+    for (const auto& node : to_color) {
+        bool layer_found = false;
+        //если слой уже есть, то просто добавляем к его компонентам компоненты
+        for (auto& entry : error_layers) {
+            if (entry.layer == node.layer) {
+                entry.components.push_back(node.component);
+                layer_found = 1;
+                break;
+            }
+        }
+        // Если слоя нет, то создаем пару слой-компоненты
+        if (!layer_found) {
+            ToColor new_entry;
+            new_entry.layer = node.layer;
+            new_entry.components.push_back(node.component);
+            error_layers.push_back(new_entry);
+        }
+    }
+    return error_layers;
 }
-void ColorRocks(std::vector<UniqueNode>& rocks, const std::vector<int>& filling_color, const std::vector<cv::Mat>& images) {
+void ColorRocks(std::vector<ToColor>& rocks, const std::vector<int>& filling_color, const std::vector<cv::Mat>& images) {
     for (const auto& el : rocks) {
         cv::Mat orig_img = images[el.layer - 1];
         cv::Mat labeled_img(orig_img.size(), CV_32S);
@@ -108,7 +126,10 @@ void ColorRocks(std::vector<UniqueNode>& rocks, const std::vector<int>& filling_
         }
         // задаем цвета фону и той компоненте, которую надо покрасить
         colors[0] = cv::Vec3b(0, 0, 0);
-        colors[el.component] = cv::Vec3b(filling_color[0], filling_color[1], filling_color[2]);
+
+        for (int component : el.components) {
+            colors[component] = cv::Vec3b(filling_color[0], filling_color[1], filling_color[2]);
+        }
         
         cv::Mat colored_img(orig_img.size(), CV_8UC3);
         for (int r = 0; r < colored_img.rows; ++r) {
@@ -119,14 +140,48 @@ void ColorRocks(std::vector<UniqueNode>& rocks, const std::vector<int>& filling_
             }
         }
         std::string filename = ".png";
-        filename.insert(0, std::to_string(el.component));
-        filename.insert(0, " ");
         filename.insert(0, std::to_string(el.layer));
         cv::imwrite(filename, colored_img);
     }
 
 }
-void PoroCheck(std::vector<cv::Mat>& pics) {
+
+
+void ColorRocks_2(std::vector<ToColor>& rocks, const std::vector<int>& filling_color, const std::vector<cv::Mat>& images, std::string filename) {
+    for (const auto& el : rocks) {
+        cv::Mat orig_img = images[el.layer - 1];
+        cv::Mat labeled_img(orig_img.size(), CV_32S);
+        int labels_amount = connectedComponents(orig_img, labeled_img, 8);
+
+        std::vector<cv::Vec3b> colors(labels_amount);
+        for (int label = 1; label < labels_amount; ++label) {
+            colors[label] = cv::Vec3b(255, 255, 255);
+        }
+        // задаем цвета фону и той компоненте, которую надо покрасить
+        colors[0] = cv::Vec3b(0, 0, 0);
+
+        for (int component : el.components) {
+            colors[component] = cv::Vec3b(filling_color[0], filling_color[1], filling_color[2]);
+        }
+
+        cv::Mat colored_img(orig_img.size(), CV_8UC3);
+        for (int r = 0; r < colored_img.rows; ++r) {
+            for (int c = 0; c < colored_img.cols; ++c) {
+                int label = labeled_img.at<int>(r, c);
+                cv::Vec3b& pixel = colored_img.at<cv::Vec3b>(r, c);
+                pixel = colors[label];
+            }
+        }
+        std::string fn = filename;
+        std::string filename_2 = ".png";
+        filename_2.insert(0, std::to_string(el.layer));
+        fn.insert(fn.length(), filename_2);
+        cv::imwrite(fn, colored_img);
+    }
+
+}
+
+void PoroCheck(std::vector<cv::Mat>& pics, std::string filename) {
     for (int t = 0; t < pics.size(); t++) {
         bin(pics[t]);
     }
@@ -160,7 +215,7 @@ void PoroCheck(std::vector<cv::Mat>& pics) {
         cv::Mat stats, center;
         // проходим маску пересечений
         int mask_n = cv::connectedComponentsWithStats(intersect, intersect_label, stats, center, 8);
-        std::cout << mask_n << std::endl;
+        
 
         for (int comp = 1; comp < mask_n; comp += 1) {
             bool found = 0;
@@ -178,10 +233,6 @@ void PoroCheck(std::vector<cv::Mat>& pics) {
                         int c_2 = connected_2.at<int>(border_y, c);
                         UniqueNode pair_1{ p + 1, c_1 };
                         UniqueNode pair_2{ p + 2, c_2 };
-
-                        std::cout << "(" << pair_1.layer << " " << pair_1.component << ")";
-                        std::cout << "(" << pair_2.layer << " " << pair_2.component << ")";
-                        std::cout << "\n";
                         g.addEdge(uniqueNodes[pair_1], uniqueNodes[pair_2]);
 
                         found = 1;
@@ -198,11 +249,7 @@ void PoroCheck(std::vector<cv::Mat>& pics) {
                             int c_1 = connected_1.at<int>(r, border_x);
                             int c_2 = connected_2.at<int>(r, border_x);
                             UniqueNode pair_1{ p + 1, c_1 };
-                            UniqueNode pair_2{ p + 2, c_2 };
-
-                            std::cout << "(" << pair_1.layer << " " << pair_1.component << ")";
-                            std::cout << "(" << pair_2.layer << " " << pair_2.component << ")";
-                            std::cout << "\n";
+                            UniqueNode pair_2{ p + 2, c_2 };                      
                             g.addEdge(uniqueNodes[pair_1], uniqueNodes[pair_2]);
                             break;
                         }
@@ -212,16 +259,11 @@ void PoroCheck(std::vector<cv::Mat>& pics) {
         }
 
     }
-    /*for (const auto& entry : uniqueNodes) {
-        const UniqueNode& key = entry.first;
-        const lemon::ListGraph::Node& value = entry.second;
-        std::cout << "(" << key.layer << " " << key.component << ")" << "\n";
-    }*/
     //анализ графа 
     int limit;
     std::cout << " Enter limit weight ";
     std::cin >> limit;
-    std::vector<UniqueNode> to_color = FindRocks(limit, g, node_set);
+    std::vector<ToColor> to_color = FindRocks(limit, g, node_set);
     if (to_color.empty()) {
         std::cout << "Checked, no dandling rocks detected" << std::endl;
     }
@@ -235,10 +277,18 @@ void PoroCheck(std::vector<cv::Mat>& pics) {
             CheckColor(color[t]);
         }
         ColorRocks(to_color, color, pics);
+
+        ColorRocks_2(to_color, color, pics, filename);
         std::cout << "\nColored";
     }
 
 }
+
+
+
+
+
+
 
 int main() {
 
@@ -254,6 +304,7 @@ int main() {
         
 
     }
-    PoroCheck(pictures);
+    std::string filename = "C:/Users/romad/source/repos/temporary/misis2023f-22-04-romadova-i-o/input_pictures/";
+    PoroCheck(pictures, filename);
 
 }

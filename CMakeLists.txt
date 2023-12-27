@@ -48,7 +48,7 @@ install(TARGETS temp
 DESTINATION bin)
 
 install(DIRECTORY ${CMAKE_SOURCE_DIR}/input_pictures/
-  DESTINATION data
+  DESTINATION input_pictures
 )
 
 install(DIRECTORY ${CMAKE_RUNTIME_OUTPUT_DIRECTORY_DEBUG}/
