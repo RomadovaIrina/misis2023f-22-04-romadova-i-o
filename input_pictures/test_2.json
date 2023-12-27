@@ -6,6 +6,7 @@
   "filename_4": "../input_pictures/t_2_4.png",
   "filename_5": "../input_pictures/t_2_5.png",
   "background": 0,
-  "limit": 2
+  "limit": 2,
+  "filename": "../input_pictures"
 
 }
