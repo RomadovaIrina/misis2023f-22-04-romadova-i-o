@@ -199,8 +199,7 @@ void WriteImages(std::vector<cv::Mat>& images, const std::string& filename) {
     for (int i = 0; i < images.size(); i += 1) {
         std::string full_name = filename;
         full_name.insert(full_name.length(), std::to_string(i + 1));
-        full_name.insert(full_name.length(), ".png");
-        std::cout << full_name << std::endl;
+        full_name.insert(full_name.length(), ".png");       
         cv::imwrite(full_name, images[i]);
     }
 }
