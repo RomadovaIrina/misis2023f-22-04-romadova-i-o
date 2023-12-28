@@ -14,7 +14,6 @@
 #include <string>
 #include <unordered_map>
 
-void build_check();
 
 /**
     @brief —труктура уникальной вершины, где хранитс€ номер сло€ и номер компоненты св€зности

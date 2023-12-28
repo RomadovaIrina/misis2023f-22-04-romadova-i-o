@@ -1,8 +1,5 @@
 #include <porocheck/porocheck.hpp>
 
-void build_check() {
-    std::cout << "Ok";
-}
 
 //костыль, которого быть не должно но пока он есть
 void bin(cv::Mat& im, const uchar& back) {
@@ -184,14 +181,7 @@ std::vector<cv::Mat> PoroCheck(std::vector<cv::Mat>& pics, const uchar& back, co
     std::vector<cv::Mat> faulty_markup;
 
     std::vector<ToColor> to_color = FindRocks(limit, g, node_set);
-    if (to_color.empty()) {
-        std::cout << "Checked, no dandling rocks detected" << std::endl;
-    }
-    else {
-        std::cout << "Dandling rocks detected, check markup" << std::endl;
-        faulty_markup = ColorRocks(to_color, color, back, pics);
-        std::cout << "\nDandling rocks colored";
-    }
+    faulty_markup = ColorRocks(to_color, color, back, pics);
     return faulty_markup;
 }
 
