@@ -90,8 +90,15 @@ std::vector<cv::Mat> ColorRocks(std::vector<ToColor>& rocks, const cv::Vec3b& fi
 /**
     @brief Функция для проверки разметки пор на изображениях. 
     @param background Цвет Поры - фона
+    @param limit Пороговый вес, с которого компонента связности относится к висячим камням
+    @param color цвет, в который будут покрашены компоненты связности относящиеся к висячим камням на кажом слое
 */
-std::vector<cv::Mat> PoroCheck(std::vector<cv::Mat>& pics, const uchar& back, const int limit, cv::Vec3b& color);
+std::vector<cv::Mat> PoroCheck(std::vector<cv::Mat>& pics, const uchar& back, const int& limit, cv::Vec3b& color);
 
+/**
+    @brief Функция для записи изображений в заданную папку
+    @param images изображения, которые надо записать
+    @param filename имя папки и паттерн имени файла куда записать изображения
+*/
 void WriteImages(std::vector<cv::Mat>& images, const std::string& filename);
 #endif

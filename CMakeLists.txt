@@ -5,6 +5,20 @@ project ("PoroMarker")
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 set_property(GLOBAL PROPERTY PREDEFINED_TARGETS_FOLDER "cmake")
 
+
+
+#option(BUILD_CODEFORCES "Build prj.codeforces " ON)
+#if(BUILD_CODEFORCES)
+#    add_subdirectory("prj.codeforces")
+#endif()
+
+#option(BUILD_LIB "Build only library " ON)
+#if(BUILD_LIB)
+#    add_subdirectory("prj.cw")
+#endif()
+
+
+
 set(CMAKE_VERBOSE_MAKEFILE True)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED True) 
@@ -25,8 +39,8 @@ find_package(Doxygen REQUIRED)
 find_package(nlohmann_json REQUIRED)
 
 add_subdirectory ("prj.cw")
-add_subdirectory ("prj.codeforces")
 add_subdirectory ("prj.test")
+add_subdirectory ("prj.codeforces")
 
 if(DOXYGEN_FOUND)
     set(DOXYGEN_IN ${CMAKE_CURRENT_SOURCE_DIR}/prj.cw/Doxyfile)
@@ -44,7 +58,7 @@ if(DOXYGEN_FOUND)
                DESTINATION docs)
    endif()
 
-install(TARGETS temp
+install(TARGETS lib_test
 DESTINATION bin)
 
 install(DIRECTORY ${CMAKE_SOURCE_DIR}/test_data/

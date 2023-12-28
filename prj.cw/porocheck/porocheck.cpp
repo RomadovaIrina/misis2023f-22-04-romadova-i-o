@@ -107,7 +107,7 @@ std::vector<cv::Mat> ColorRocks(std::vector<ToColor>& rocks, const cv::Vec3b& fi
 
 }
 
-std::vector<cv::Mat> PoroCheck(std::vector<cv::Mat>& pics, const uchar& back, const int limit, cv::Vec3b& color) {
+std::vector<cv::Mat> PoroCheck(std::vector<cv::Mat>& pics, const uchar& back, const int& limit, cv::Vec3b& color) {
     for (int t = 0; t < pics.size(); t++) {
         bin(pics[t], back);
     }
