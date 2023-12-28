@@ -1,0 +1,12 @@
+{
+
+  "filename_1": "../test_data/input_pictures/t_2_1.png",
+  "filename_2": "../test_data/input_pictures/t_2_2.png",
+  "filename_3": "../test_data/input_pictures/t_2_3.png",
+  "filename_4": "../test_data/input_pictures/t_2_4.png",
+  "filename_5": "../test_data/input_pictures/t_2_5.png",
+  "background": 0,
+  "limit": 2,
+  "filename": "../test_data/output_pictures/out_2_"
+
+}

@@ -88,6 +88,7 @@ std::vector<ToColor> FindRocks(const int& limit, const lemon::ListGraph& g,  lem
 
     std::vector<UniqueNode> to_color;
     for (int i = 0; i < weight.size(); i += 1) {
+        std::cout << weight[i] << " ";
         if (weight[i] <= limit) {
             to_color.insert(to_color.end(), comp_list[i].begin(), comp_list[i].end());
         }
@@ -114,8 +115,11 @@ std::vector<ToColor> FindRocks(const int& limit, const lemon::ListGraph& g,  lem
     }
     return error_layers;
 }
-void ColorRocks(std::vector<ToColor>& rocks, const std::vector<int>& filling_color, const std::vector<cv::Mat>& images) {
+std::vector<cv::Mat> ColorRocks(std::vector<ToColor>& rocks, const std::vector<int>& filling_color, const std::vector<cv::Mat>& images) {
+    std::vector<cv::Mat> res;
     for (const auto& el : rocks) {
+
+
         cv::Mat orig_img = images[el.layer - 1];
         cv::Mat labeled_img(orig_img.size(), CV_32S);
         int labels_amount = connectedComponents(orig_img, labeled_img, 8);
@@ -139,11 +143,9 @@ void ColorRocks(std::vector<ToColor>& rocks, const std::vector<int>& filling_col
                 pixel = colors[label];
             }
         }
-        std::string filename = ".png";
-        filename.insert(0, std::to_string(el.layer));
-        cv::imwrite(filename, colored_img);
+        res.push_back(colored_img);
     }
-
+    return res;
 }
 
 
@@ -181,7 +183,7 @@ void ColorRocks_2(std::vector<ToColor>& rocks, const std::vector<int>& filling_c
 
 }
 
-void PoroCheck(std::vector<cv::Mat>& pics, std::string filename) {
+std::vector<cv::Mat> PoroCheck(std::vector<cv::Mat>& pics, std::string filename) {
     for (int t = 0; t < pics.size(); t++) {
         bin(pics[t]);
     }
@@ -264,6 +266,9 @@ void PoroCheck(std::vector<cv::Mat>& pics, std::string filename) {
     std::cout << " Enter limit weight ";
     std::cin >> limit;
     std::vector<ToColor> to_color = FindRocks(limit, g, node_set);
+
+    std::vector<cv::Mat> mod;
+
     if (to_color.empty()) {
         std::cout << "Checked, no dandling rocks detected" << std::endl;
     }
@@ -276,11 +281,12 @@ void PoroCheck(std::vector<cv::Mat>& pics, std::string filename) {
             std::cin >> color[t];
             CheckColor(color[t]);
         }
-        ColorRocks(to_color, color, pics);
+        mod=ColorRocks(to_color, color, pics);
 
         ColorRocks_2(to_color, color, pics, filename);
         std::cout << "\nColored";
     }
+    return mod;
 
 }
 
@@ -305,6 +311,9 @@ int main() {
 
     }
     std::string filename = "C:/Users/romad/source/repos/temporary/misis2023f-22-04-romadova-i-o/input_pictures/";
-    PoroCheck(pictures, filename);
+
+    std::vector<cv::Mat> a(PoroCheck(pictures, filename));
+    /*cv::imshow("qwertyu", a[2]);
+    cv::waitKey(0);*/
 
 }

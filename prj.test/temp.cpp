@@ -15,6 +15,8 @@ int main(int argc, char* argv[]) {
         std::string filename_4(j["filename_4"]);
         std::string filename_5(j["filename_5"]);
 
+        std::string filename(j["filename"]);
+
         pictures.push_back(cv::Mat(cv::imread(filename_1, cv::IMREAD_GRAYSCALE)));
         pictures.push_back(cv::Mat(cv::imread(filename_2, cv::IMREAD_GRAYSCALE)));
         pictures.push_back(cv::Mat(cv::imread(filename_3, cv::IMREAD_GRAYSCALE)));
@@ -26,6 +28,7 @@ int main(int argc, char* argv[]) {
 
         cv::Vec3b color(std::stoi(argv[2]), std::stoi(argv[3]), std::stoi(argv[4]));
 
-        PoroCheck(pictures, back, limit, color);
+        std::vector<cv::Mat> error(PoroCheck(pictures, back, limit, color));
+        WriteImages(error, filename);
     
 }

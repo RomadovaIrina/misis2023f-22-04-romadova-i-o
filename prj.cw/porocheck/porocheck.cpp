@@ -79,7 +79,8 @@ std::vector<ToColor> FindRocks(const int& limit, const lemon::ListGraph& g, lemo
 }
 
 
-void ColorRocks(std::vector<ToColor>& rocks, const cv::Vec3b& filling_color, const uchar& back, const std::vector<cv::Mat>& images) {
+std::vector<cv::Mat> ColorRocks(std::vector<ToColor>& rocks, const cv::Vec3b& filling_color, const uchar& back, const std::vector<cv::Mat>& images) {
+    std::vector<cv::Mat> colored_images;
     for (const auto& el : rocks) {
         cv::Mat orig_img = images[el.layer - 1];
         cv::Mat labeled_img(orig_img.size(), CV_32S);
@@ -103,14 +104,13 @@ void ColorRocks(std::vector<ToColor>& rocks, const cv::Vec3b& filling_color, con
                 pixel = colors[label];
             }
         }
-        std::string filename = ".png";
-        filename.insert(0, std::to_string(el.layer));
-        cv::imwrite(filename, colored_img);
+        colored_images.push_back(colored_img);
     }
+    return colored_images;
 
 }
 
-void PoroCheck(std::vector<cv::Mat>& pics, const uchar& back, const int limit, cv::Vec3b& color) {
+std::vector<cv::Mat> PoroCheck(std::vector<cv::Mat>& pics, const uchar& back, const int limit, cv::Vec3b& color) {
     for (int t = 0; t < pics.size(); t++) {
         bin(pics[t], back);
     }
@@ -181,15 +181,26 @@ void PoroCheck(std::vector<cv::Mat>& pics, const uchar& back, const int limit, c
 
     }
     //анализ графа 
+    std::vector<cv::Mat> faulty_markup;
+
     std::vector<ToColor> to_color = FindRocks(limit, g, node_set);
     if (to_color.empty()) {
         std::cout << "Checked, no dandling rocks detected" << std::endl;
     }
     else {
         std::cout << "Dandling rocks detected, check markup" << std::endl;
-        ColorRocks(to_color, color, back, pics);
+        faulty_markup = ColorRocks(to_color, color, back, pics);
         std::cout << "\nDandling rocks colored";
     }
-
+    return faulty_markup;
 }
 
+void WriteImages(std::vector<cv::Mat>& images, const std::string& filename) {
+    for (int i = 0; i < images.size(); i += 1) {
+        std::string full_name = filename;
+        full_name.insert(full_name.length(), std::to_string(i + 1));
+        full_name.insert(full_name.length(), ".png");
+        std::cout << full_name << std::endl;
+        cv::imwrite(full_name, images[i]);
+    }
+}
