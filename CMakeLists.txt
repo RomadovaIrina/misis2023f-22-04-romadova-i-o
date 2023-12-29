@@ -7,15 +7,6 @@ set_property(GLOBAL PROPERTY PREDEFINED_TARGETS_FOLDER "cmake")
 
 
 
-#option(BUILD_CODEFORCES "Build prj.codeforces " ON)
-#if(BUILD_CODEFORCES)
-#    add_subdirectory("prj.codeforces")
-#endif()
-
-#option(BUILD_LIB "Build only library " ON)
-#if(BUILD_LIB)
-#    add_subdirectory("prj.cw")
-#endif()
 
 
 
@@ -38,9 +29,18 @@ find_package(LEMON REQUIRED)
 find_package(Doxygen REQUIRED)
 find_package(nlohmann_json REQUIRED)
 
-add_subdirectory ("prj.cw")
+
+option(BUILD_LIB "Build only library " OFF)
+if(BUILD_LIB)
+    add_subdirectory("prj.cw")
+else()
+    add_subdirectory("prj.cw")
+    add_subdirectory ("prj.codeforces")
+endif()
+
+#add_subdirectory ("prj.cw")
 add_subdirectory ("prj.test")
-add_subdirectory ("prj.codeforces")
+#add_subdirectory ("prj.codeforces")
 
 if(DOXYGEN_FOUND)
     set(DOXYGEN_IN ${CMAKE_CURRENT_SOURCE_DIR}/prj.cw/Doxyfile)
