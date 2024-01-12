@@ -21,9 +21,9 @@
 struct UniqueNode {
     int layer;
     int component;
-    bool operator==(const UniqueNode& other) const {
+    bool operator==(const UniqueNode& other) const; /*{
         return (layer == other.layer && component == other.component);
-    }
+    }*/
 };
 
 /**

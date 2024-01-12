@@ -1,7 +1,12 @@
 #include <porocheck/porocheck.hpp>
 
 
-//костыль, которого быть не должно но пока он есть
+
+bool UniqueNode::operator==(const UniqueNode& other) const {
+    return (layer == other.layer && component == other.component);
+}
+
+
 void bin(cv::Mat& im, const uchar& back) {
     if (back == 0) {
 
@@ -19,7 +24,6 @@ void FillUniqueNodes(const int& height, const int& width, const int& amount, lem
     cv::Mat labels(height, width, CV_32S);
     for (int c = 1; c < amount; c += 1) {
         UniqueNode pair{ picture_index, c };
-        // кажетс€ все вершины стоит добавл€ть еще до начала их стыковки
         if (UniqueNodes.find(pair) == UniqueNodes.end()) {
             lemon::ListGraph::Node vertex = graph.addNode();
             UniqueNodes[pair] = vertex;
@@ -56,7 +60,6 @@ std::vector<ToColor> FindRocks(const int& limit, const lemon::ListGraph& g, lemo
 
     for (const auto& node : to_color) {
         bool layer_found = false;
-        //если слой уже есть, то просто добавл€ем к его компонентам компоненты
         for (auto& entry : error_layers) {
             if (entry.layer == node.layer) {
                 entry.components.push_back(node.component);
@@ -64,7 +67,6 @@ std::vector<ToColor> FindRocks(const int& limit, const lemon::ListGraph& g, lemo
                 break;
             }
         }
-        // ≈сли сло€ нет, то создаем пару слой-компоненты
         if (!layer_found) {
             ToColor new_entry;
             new_entry.layer = node.layer;
@@ -87,7 +89,6 @@ std::vector<cv::Mat> ColorRocks(std::vector<ToColor>& rocks, const cv::Vec3b& fi
         for (int label = 1; label < labels_amount; ++label) {
             colors[label] = cv::Vec3b(255 - back, 255 - back, 255 - back);
         }
-        // задаем цвета фону и той компоненте, которую надо покрасить
         colors[0] = cv::Vec3b(back, back, back);
         for (int component : el.components) {
             colors[component] = cv::Vec3b(filling_color[0], filling_color[1], filling_color[2]);
@@ -112,29 +113,20 @@ std::vector<cv::Mat> PoroCheck(std::vector<cv::Mat>& pics, const uchar& back, co
         bin(pics[t], back);
     }
     lemon::ListGraph g;
-    //создаем список вершин, где хранитс€ информаци€ о значении вершины графа
     lemon::ListGraph::NodeMap<UniqueNode> node_set(g);
-    //вершина в графе
     std::unordered_map<UniqueNode, lemon::ListGraph::Node> uniqueNodes;
-    //построение графа
     for (int p = 0; p < pics.size() - 1; p += 1) {
-        //создаем размеченные изображени€ 
         cv::Mat connected_1(pics[p].size(), CV_32S);
         cv::Mat connected_2(pics[p + 1].size(), CV_32S);
-        ////находим кол-во компоненет
         int labeled_1 = cv::connectedComponents(pics[p], connected_1, 8);
         int labeled_2 = cv::connectedComponents(pics[p + 1], connected_2, 8);
-        //запоминаем размеры изображени€
         int height = pics[p].rows;
         int width = pics[p].cols;
-        //«аполн€ем граф уникальными вершинами
         FillUniqueNodes(height, width, labeled_1, g, p + 1, node_set, uniqueNodes);
         FillUniqueNodes(height, width, labeled_2, g, p + 2, node_set, uniqueNodes);
-        // пересекаем маски
         cv::Mat intersect = pics[p] & pics[p + 1];
         cv::Mat intersect_label(pics[p].size(), CV_32S);
         cv::Mat stats, center;
-        // проходим маску пересечений
         int mask_n = cv::connectedComponentsWithStats(intersect, intersect_label, stats, center, 8);
 
         for (int comp = 1; comp < mask_n; comp += 1) {
@@ -177,7 +169,6 @@ std::vector<cv::Mat> PoroCheck(std::vector<cv::Mat>& pics, const uchar& back, co
         }
 
     }
-    //анализ графа 
     std::vector<cv::Mat> faulty_markup;
 
     std::vector<ToColor> to_color = FindRocks(limit, g, node_set);
